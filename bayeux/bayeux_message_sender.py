@@ -1,5 +1,6 @@
 import bayeux_constants
 import logging
+from urlparse import urlparse
 
 from twisted.internet import defer, reactor
 from twisted.internet.defer import succeed
@@ -95,10 +96,11 @@ class BayeuxMessageSender(object):
                 during sending.
         """
         def do_send():
+            host = urlparse(self.server).netloc
             d = self.agent.request('POST',
                 self.server,
                 Headers({'Content-Type': ['application/x-www-form-urlencoded'],
-                    'Host': [self.server]}),
+                    'Host': [host]}),
                 BayeuxProducer(str(message)))
 
             def cb(response):
