@@ -103,17 +103,19 @@ class BayeuxMessageSender(object):
                     'Host': [host]}),
                 BayeuxProducer(str(message)))
 
-            def cb(response):
-                response.deliverBody(self.receiver)
-                return d
-            
             def error(reason):
                 logging.error('Error sending msg: %s' % reason)
                 logging.error(reason.getErrorMessage())                
                 #logging.debug(reason.value.reasons[0].printTraceback())
                 if errback is not None:
                     errback(reason)
-            
+
+            def cb(response):
+                self.receiver.deliver_d = defer.Deferred()
+                self.receiver.deliver_d.addErrback(error)
+                response.deliverBody(self.receiver)
+                return d
+
             d.addCallback(cb)
             d.addErrback(error)
         #Make sure that our send happens on the reactor thread

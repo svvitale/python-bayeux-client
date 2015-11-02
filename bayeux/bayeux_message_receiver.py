@@ -15,6 +15,7 @@ class BayeuxMessageReceiver(Protocol):
         """Initialize the message receiver."""
         self.listeners = collections.defaultdict(set)
         self.buf = ''
+        self.deliver_d = None
 
     def register(self, event, callback):
         """Register a callback for a particular event
@@ -72,7 +73,10 @@ class BayeuxMessageReceiver(Protocol):
         except ValueError as e:
             print 'Error parsing data: ', self.buf
             print e
+            if self.deliver_d is not None:
+                self.deliver_d.errback(e)
         self.buf = ''
+        self.deliver_d = None
 
     def notify(self, event, data):
         """Notify listeners that data was received for the specified event.
