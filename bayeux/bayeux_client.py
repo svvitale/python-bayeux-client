@@ -1,17 +1,17 @@
-import bayeux_constants
+from . import bayeux_constants
 import collections
 import json
 import logging
-import zope.interface
+from zope.interface import implementer
 from threading import Timer, Thread, RLock
 from twisted.internet import reactor
-from bayeux_message_receiver import BayeuxMessageReceiver
-from bayeux_message_sender import BayeuxMessageSender
+from .bayeux_message_receiver import BayeuxMessageReceiver
+from .bayeux_message_sender import BayeuxMessageSender
 
-from interfaces import IMessengerService
+from .interfaces import IMessengerService
 
+@implementer(IMessengerService)
 class BayeuxClient(object):
-    zope.interface.implements(IMessengerService)
     """Client that implements the bayeux protocol.
 
     User of this class should call register to register for 

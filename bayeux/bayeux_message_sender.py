@@ -1,13 +1,16 @@
-import bayeux_constants
+from . import bayeux_constants
 import logging
-from urlparse import urlparse
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 from twisted.internet import defer, reactor
 from twisted.internet.defer import succeed
 from twisted.web.client import Agent, HTTPConnectionPool
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer
-from zope.interface import implements
+from zope.interface import implementer
 
 #TODO Use join for string building or 'msg'.format formatting
 
@@ -97,16 +100,15 @@ class BayeuxMessageSender(object):
         """
         def do_send():
             host = urlparse(self.server).netloc
-            d = self.agent.request('POST',
-                self.server,
+            d = self.agent.request('POST'.encode(),
+                self.server.encode(),
                 Headers({'Content-Type': ['application/x-www-form-urlencoded'],
                     'Host': [host]}),
-                BayeuxProducer(str(message)))
+                BayeuxProducer(message.encode()))
 
             def error(reason):
                 logging.error('Error sending msg: %s' % reason)
                 logging.error(reason.getErrorMessage())                
-                #logging.debug(reason.value.reasons[0].printTraceback())
                 if errback is not None:
                     errback(reason)
 
@@ -164,8 +166,8 @@ class BayeuxMessageSender(object):
         logging.debug('unsubscribe: %s' % message)
         self.send_message(message, errback)
 
+@implementer(IBodyProducer)
 class BayeuxProducer(object):
-    implements(IBodyProducer)
     """Producer class used by the BayeuxMessageSender to write data.
 
     Attributes:

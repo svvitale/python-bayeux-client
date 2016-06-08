@@ -52,7 +52,7 @@ class BayeuxMessageReceiver(Protocol):
             data: The data string that was sent from the bayeux server
         """
         logging.debug('dataReceived: %s' % data)
-        self.buf += data
+        self.buf += data.decode()
 
     def connectionLost(self, reason):
         """Called after an entire message is received.
@@ -71,8 +71,8 @@ class BayeuxMessageReceiver(Protocol):
                 if 'channel' in msg:
                     self.notify(msg['channel'], msg)
         except ValueError as e:
-            print 'Error parsing data: ', self.buf
-            print e
+            logging.error('Error parsing data: ' + self.buf)
+            logging.error(e)
             if self.deliver_d is not None:
                 self.deliver_d.errback(e)
         self.buf = ''
